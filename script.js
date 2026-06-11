@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let markdownRenderTimeout = null;
   const RENDER_DELAY = 100;
   let syncScrollingEnabled = true;
+  let isCopyMdWithShortcut = false;
   let isEditorScrolling = false; 
   let isPreviewScrolling = false;
   let scrollSyncTimeout = null;
@@ -16,6 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const exportHtml = document.getElementById("export-html");
   const exportPdf = document.getElementById("export-pdf");
   const copyMarkdownButton = document.getElementById("copy-markdown-button");
+  const copyMdToggle = document.getElementById('copy-md-toggle');
+  const pasteClipboardButton = document.getElementById('paste-clipboard-button');
   const dropzone = document.getElementById("dropzone");
   const closeDropzoneBtn = document.getElementById("close-dropzone");
   const toggleSyncButton = document.getElementById("toggle-sync");
@@ -468,6 +471,15 @@ This is a fully client-side application. Your content never leaves your browser 
     }
   }
 
+    function toggleCopyMdWithShortcut() {
+    isCopyMdWithShortcut = !isCopyMdWithShortcut;
+    if (isCopyMdWithShortcut) {
+      copyMdToggle.classList.add("border-primary");
+    } else {
+      copyMdToggle.classList.remove("border-primary");
+    }
+  }
+
   function openMobileMenu() {
     mobileMenuPanel.classList.add("active");
     mobileMenuOverlay.classList.add("active");
@@ -768,6 +780,56 @@ This is a fully client-side application. Your content never leaves your browser 
     }
   });
 
+  pasteClipboardButton.addEventListener("click", async () => {
+  try {
+      if (navigator.clipboard && window.isSecureContext) {
+          // Request clipboard text
+         const clipboardText = await navigator.clipboard.readText();
+
+          // Paste it into the editor
+          markdownEditor.value = clipboardText;
+
+          renderMarkdown();
+
+          showPastedMessage();
+           console.log("✅ Pasted from clipboard:", clipboardText.slice(0, 50)); // log first 50 chars
+      }
+    
+  } catch (error) {
+    console.error("❌ Failed to read clipboard:", error);
+
+    // Fallback message for browsers blocking access
+    alert("Unable to access clipboard. Try using Ctrl+V (or ⌘+V on Mac) instead.");
+  }
+});
+
+function showPastedMessage() {
+    const originalText = pasteClipboardButton.innerHTML;
+    pasteClipboardButton.innerHTML = '<i class="bi bi-check-lg"></i> Pasted!';
+
+    setTimeout(() => {
+      pasteClipboardButton.innerHTML = originalText;
+    }, 2000);
+  }
+
+
+  // Detect OS
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+// Get the text span
+const copyMdText = document.getElementById('copy-md-text');
+
+// Update text based on OS
+if (isMac) {
+    copyMdText.textContent = "⌘+C Copy MD";
+} else {
+    copyMdText.textContent = "Ctrl+C Copy MD";
+}
+copyMdToggle.title = copyMdText.textContent;
+
+  
+copyMdToggle.addEventListener('click', toggleCopyMdWithShortcut);
+
   async function copyToClipboard(text) {
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -866,8 +928,10 @@ This is a fully client-side application. Your content never leaves your browser 
       exportMd.click();
     }
     if ((e.ctrlKey || e.metaKey) && e.key === "c") {
-      e.preventDefault();
-      copyMarkdownButton.click();
+      if(isCopyMdWithShortcut === true){
+          e.preventDefault();
+            copyMarkdownButton.click();
+      }
     }
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "S") {
       e.preventDefault();

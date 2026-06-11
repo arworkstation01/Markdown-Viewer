@@ -205,6 +205,38 @@ body {
   font-size: 16px;
 }
 
+.toolbar .toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px; 
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar .toggle-button:hover {
+  background-color: var(--button-hover);
+}
+
+.toolbar .toggle-button.active {
+  background-color: var(--accent-color);
+  color: var(--button-bg);
+  border-color: var(--accent-color);
+}
+
+.toolbar .toggle-button i {
+  font-size: 16px;
+  transition: color 0.2s ease;
+}
+
+.toolbar .toggle-button.active i {
+  color: var(--button-bg);
+}
+
 .file-input {
   display: none;
 }
